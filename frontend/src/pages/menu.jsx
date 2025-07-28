@@ -5,11 +5,20 @@ import { Plus } from 'lucide-react';
 import Navbar from "../components/NavBar";
 import MenuItemModal from "../components/MenuItemModal";
 import Footer from './../components/Footer';
-import { useCart } from "../context/cartContext";
 import axios from "axios";
 const Menu = () => {
 const [menu, setMenu] = useState([]);
-useEffect(() => {
+const [userId , setUserId] = useState();
+  useEffect(() => {
+  setUserId(localStorage.getItem('guestId'))
+  },[])
+const addToCart = async (menuItemId, extras, quantity) => {
+  const bodyObject = {items:  {menuItemId , extras, quantity}};
+ await axios.post(`http://localhost:3000/api/cart/${userId}`, bodyObject);
+     window.location.reload(false);
+
+  };
+  useEffect(() => {
   axios.get('http://localhost:3000/api/menu')
     .then(res => {
 
@@ -18,10 +27,10 @@ useEffect(() => {
     })
     .catch(err => console.error(err));
 }, []);
-const  {addToCartf}  = useCart();
-
+// const  {addToCart}  = useCart();
+ 
   const handleAdd = (item) => {
-    addToCartf(item);
+    console.log(item);
   };
   const [groupedMenu, setGroupedMenu] = useState([]);
 useEffect(() => {
@@ -32,20 +41,21 @@ useEffect(() => {
   }, {});
   setGroupedMenu(grouped);
 }, [menu]);
-  const [cart, setCart] = useState([]);
+  // const [cart, setCart] = useState([]);
 
-      const addToCart = (item) => {
-    const existing = cart.find((i) => i._id === item._id);  
-    if (existing) {
-        console.log(`${existing.qty} ${existing.name} to cart`)
-        console.log(cart)
-        setCart(cart.map(i => i._id === item._id ? { ...i, qty: i.qty + 1 } : i));
-    } else {
+
+  //     const addToCart = (item) => {
+  //   const existing = cart.find((i) => i._id === item._id);  
+  //   if (existing) {
+  //       console.log(`${existing.qty} ${existing.name} to cart`)
+  //       console.log(cart)
+  //       setCart(cart.map(i => i._id === item._id ? { ...i, qty: i.qty + 1 } : i));
+  //   } else {
         
-      setCart([...cart, { ...item, qty: 1 }]);
-      console.log(cart)
-    }
-  }
+  //     setCart([...cart, { ...item, qty: 1 }]);
+  //     console.log(cart)
+  //   }
+  // }
     const [selectedItem, setSelectedItem] = useState(null);
 
   const handleAddToCart = (data) => {
@@ -91,7 +101,7 @@ useEffect(() => {
         isOpen={!!selectedItem}
         item={selectedItem}
         onClose={() => setSelectedItem(null)}
-        onConfirm={(itemData) => handleAdd(itemData)}
+        onConfirm={(itemData) => addToCart(itemData.item._id , itemData.extras , itemData.quantity)}
       />
     </div>
     <Footer />

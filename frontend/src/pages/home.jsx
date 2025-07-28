@@ -7,6 +7,7 @@ import { useEffect } from 'react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import Footer from './../components/Footer';
+import axios from "axios";
 
 
 const Home = () => {
@@ -30,6 +31,9 @@ const Home = () => {
     img: 'https://i.ibb.co/VWy46c43/484469889-18350343745195615-8444838219776569930-n.jpg',
   }
 ];
+useEffect(() => {
+   axios.get('http://localhost:3000/api/guest/init').then (res => localStorage.setItem('guestId', res.data.guestId))
+  },[])
     return (
       <>
       <Navbar />

@@ -1,31 +1,30 @@
-// src/context/CartContext.js
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios';
 import React from 'react'
 const CartContext = createContext();
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useCart = () => useContext(CartContext);
 
-export const CartProvider = ({ children }) => {
-  const [cart, setCart] = useState([]);
+export const CartProvider = ({ userId, children }) => {
+  const [cart, setCart] = useState({ items: [] });
 
-  const addToCartf = (item) => {
-const existing = cart.find((i) => i._id === item._id);  
-    if (existing) {
-        console.log(`${existing.qty} ${existing.title} to cart`)
-        console.log(cart)
-        setCart(cart.map(i => i._id === item._id ? { ...i, qty: i.qty + 1 } : i));
-    } else {
-        
-      setCart([...cart, { ...item, qty: 1 }]);
-      console.log(cart)
-    }  };
+  useEffect(() => {
+    axios.get(`/api/cart/${userId}`).then(res => setCart(res.data));
+  }, [userId]);
 
-  const value = {
-    cart,
-    addToCartf,
-    itemCount: cart.length,
+  const addToCart = async (menuItemId, extras, quantity) => {
+    const res = await axios.post(`/api/cart/${userId}`, { menuItemId, extras, quantity });
+    setCart(res.data);
   };
 
-  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+  const clearCart = async () => {
+    await axios.delete(`/api/cart/${userId}`);
+    setCart({ items: [] });
+  };
+
+  return (
+    <CartContext.Provider value={{ cart, addToCart, clearCart }}>
+      {children}
+    </CartContext.Provider>
+  );
 };

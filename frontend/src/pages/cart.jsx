@@ -1,38 +1,43 @@
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState , useEffect} from 'react';
 import { motion } from 'framer-motion';
 import '../App.css';
 import React from 'react'
 import Navbar from '../components/NavBar';
-import { useCart } from '../context/cartContext';
+import axios from 'axios';
 const Cart = () => {
   const navigate = useNavigate();
-  const { cart } = useCart()
-  console.log(cart);
+  const [cart , setCart] = useState({ items: [] });
+    const [cartData , setCartData] = useState();
+
   // Add state for quantities
   const [quantities, setQuantities] = useState([2, 2]);
-
-  const [products,setProducts] = useState([
-    {
-      name: 'King Bueno Mochi',
-      price: 90,
-      image: '/king-bueno.png',
-    },
-    {
-      name: 'Spicy Pineapple Mochi',
-      price: 90,
-      image: '/spicy-pineapple.png',
-    },
-  ])
+  const [userId , setUserId] = useState();
+  useEffect(() => {
+  setUserId(localStorage.getItem('guestId'))
+  },[])
+   useEffect(() => {
+    
+      axios.get(`http://localhost:3000/api/cart/${userId}`).then(res => setCart(res.data));
+    }, [userId , cartData] );
+    // useEffect((item)=> {
+    //   axios.post('http://localhost:3000/cart/update-quantity')
+    // },[cart])
   // setProducts(cart);
   // Update quantity for item
-  const updateQty = (index, delta) => {
-    setQuantities(prev =>
-      prev.map((q, i) => (i === index ? Math.max(q + delta, 1) : q))
-    );
-  };
+  const updateQuantity = async (menuItemId, newQuantity) => {
+  try {
+    const res = await axios.patch('http://localhost:3000/api/cart/update-quantity', {userId, menuItemId, quantity: newQuantity  })
+    console.log(res.data);
+    await setCartData(res.data); // Updates local state
+  } catch (err) {
+    console.error('Error updating quantity', err);
+  }
+};
+useEffect(()=> {
 
-  const subtotal = products.reduce((acc, item, i) => acc + item.price * quantities[i], 0);
+},[cartData])
+  const subtotal = cart?.items?.reduce((acc, item, i) => acc + item.price * quantities[i], 0);
   const VAT = 40;
   const discount = -40;
   const total = subtotal + VAT + discount;
@@ -50,31 +55,31 @@ const Cart = () => {
       <div className="bg-white/5 backdrop-blur-lg rounded-3xl shadow-lg p-6 w-full max-w-md">
         <h2 className="text-2xl font-bold mb-4">Cart</h2>
         <div className="space-y-4">
-          {cart.map((item, index) => (
+          {cart?.items?.map((item, index) => (
             <div key={index} className="flex justify-between items-center border-b border-white/10 pb-4">
               <div className="flex items-center gap-4">
-                <img src={item.imageUrl} alt={item.name} className="w-14 h-14 rounded-xl" />
+                <img src={item.menuItemId.imageUrl} alt={item.menuItemId.name} className="w-14 h-14 rounded-xl" />
                 <div>
-                  <p className="font-semibold">{item.item.title}</p>
-                  <p className="text-sm text-gray-400">{item.item.price} EGP</p>
+                  <p className="font-semibold">{item.menuItemId.title}</p>
+                  <p className="text-sm text-gray-400">{item.menuItemId.price} EGP</p>
                 </div>
               </div>
               <div className="flex items-center gap-2 text-lg">
                 <button
-                  onClick={() => updateQty(index, -1)}
+                  onClick={() => updateQuantity(item.menuItemId._id, item.quantity - 1)}
                   className="px-2 hover:text-red-400"
                 >
                   −
                 </button>
-                <span>{quantities[index]}</span>
+                <span>{item.quantity}</span>
                 <button
-                  onClick={() => updateQty(index, 1)}
+                  onClick={() => updateQuantity(item.menuItemId._id, item.quantity + 1)}
                   className="px-2 hover:text-green-400"
                 >
                   +
                 </button>
               </div>
-              <p>{quantities[index] * item.item.price}EGP</p>
+              <p>{item.quantity * item.menuItemId.price}EGP</p>
             </div>
           ))}
         </div>

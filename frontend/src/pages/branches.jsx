@@ -2,31 +2,23 @@ import React, { useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 import Navbar from './../components/NavBar';
 import Footer from '../components/Footer';
-
+import { useEffect } from 'react';
+import axios from 'axios';
 
 
 export default function Branches() {
-    const [branches,setBranches] = useState([
-  {
-    name: 'Mall of Egypt',
-    description: 'Gate C2-Level 2',
-    mapEmbedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3456.261229712179!2d31.0177415!3d29.9719217!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x145851b002677b03%3A0x2e36846ca5fa9a34!2sTaiyaki%20-%20Mall%20Of%20Egypt!5e0!3m2!1sen!2seg!4v1752492919958!5m2!1sen!2seg', // Replace with actual location URL
-  },
-  {name: 'Mall of Egypt',
-    description: 'Gate C2-Level 2',
-    mapEmbedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3455.835328962804!2d31.01760657514616!3d29.974156623960576!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14585b8559dfec8f%3A0x5971f1cb99b3c269!2sMall%20of%20Egypt!5e0!3m2!1sen!2seg!4v1629810325701!5m2!1sen!2seg',}, {name: 'Mall of Egypt',
-    description: 'Gate C2-Level 2',
-    mapEmbedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3455.835328962804!2d31.01760657514616!3d29.974156623960576!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14585b8559dfec8f%3A0x5971f1cb99b3c269!2sMall%20of%20Egypt!5e0!3m2!1sen!2seg!4v1629810325701!5m2!1sen!2seg',}, {name: 'Mall of Egypt',
-    description: 'Gate C2-Level 2',
-    mapEmbedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3455.835328962804!2d31.01760657514616!3d29.974156623960576!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14585b8559dfec8f%3A0x5971f1cb99b3c269!2sMall%20of%20Egypt!5e0!3m2!1sen!2seg!4v1629810325701!5m2!1sen!2seg',}, {name: 'Mall of Egypt',
-    description: 'Gate C2-Level 2',
-    mapEmbedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3455.835328962804!2d31.01760657514616!3d29.974156623960576!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14585b8559dfec8f%3A0x5971f1cb99b3c269!2sMall%20of%20Egypt!5e0!3m2!1sen!2seg!4v1629810325701!5m2!1sen!2seg',}, {name: 'Mall of Egypt',
-    description: 'Gate C2-Level 2',
-    mapEmbedUrl: 'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3455.835328962804!2d31.01760657514616!3d29.974156623960576!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x14585b8559dfec8f%3A0x5971f1cb99b3c269!2sMall%20of%20Egypt!5e0!3m2!1sen!2seg!4v1629810325701!5m2!1sen!2seg',},
-].map((b, i) => ({
+    const [branches,setBranches] = useState([]);
+    useEffect(() => {
+  axios.get('http://localhost:3000/api/branches')
+    .then(res => {
+      setBranches(res.data.map((b, i) => ({
   ...b,
   key: i,
-})))
+})));
+       console.log(branches);
+    })
+    .catch(err => console.error(err));
+}, []);
   return (
     <>
     <Navbar />
