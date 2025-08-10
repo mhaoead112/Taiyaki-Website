@@ -46,7 +46,7 @@ app.use(express.json());
 const PORT = process.env.PORT || 3000;
 
 app.use(cors({
-     origin: 'http://localhost:5173' || '*'
+     origin: 'https://taiyaki-website-cle4.vercel.app' || '*'
    }));
 app.listen(PORT, ()=> {
     console.log(`Server running on ${PORT}`)    
