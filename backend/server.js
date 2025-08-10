@@ -5,6 +5,12 @@ const menuRouter = require('./routes/menuRouter');
 const branchesRouter = require('./routes/branchesRouter');
 const cartRouter = require('./routes/cartRouter')
 const guestId = require('./routes/guestId');
+const orderRouter = require('./routes/orderRouter');
+const checkoutRouter = require('./routes/checkoutRouter')
+const paymobrouter = require('./routes/paymob')
+
+require('dotenv').config();
+
 // const menuItemSchema = new mongoose.Schema({
 //     "_id": Number,
 //     "title": String,
@@ -52,3 +58,6 @@ app.use('/api/menu' , menuRouter)
 app.use('/api/branches' , branchesRouter)
 app.use('/api/cart', cartRouter);
 app.use('/api/guest' , guestId);
+app.use('/api/order' , orderRouter);
+app.use('/api/paymob/checkout' , checkoutRouter)
+app.use('/api/paymob' , paymobrouter);
