@@ -13,6 +13,7 @@ const api = import.meta.env.VITE_API_URL;
     const fetchCartSummary = async () => {
       try {
         const userId = localStorage.getItem('guestId'); // function to get guestId from cookies or localStorage
+        console.log(userId)
         const { data } = await axios.get(`${api}/api/cart/summary/${userId}`);
         setTotalItems(data.totalItems);
       } catch (err) {
