@@ -30,7 +30,6 @@ const api = import.meta.env.VITE_API_URL;
         <div className="space-x-6">
           <Link to="/menu" className="text-xl font-bold text-white hover:text-red-500 transition drop-shadow-[0_0_12px_rgba(255,0,0,0.7)]">Menu</Link>
           <Link to="/branches" className="text-xl font-bold text-white hover:text-red-500 transition drop-shadow-[0_0_12px_rgba(255,0,0,0.7)]">Branches</Link>
-          <Link to="/about" className="text-xl font-bold text-white hover:text-red-500 transition drop-shadow-[0_0_12px_rgba(255,0,0,0.7)]">About</Link>
           <Link to="/cart" className="inline-flex items-center justify-center mt-3 text-white hover:text-red-500 transition"><ShoppingCart size={30} /> {totalItems > 0 && (<span className="relative -top-2 -left-4 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full shadow-lg animate-pulse">{totalItems}</span>)}</Link>
         </div>
       </div>
