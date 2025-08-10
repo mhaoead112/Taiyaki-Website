@@ -11,6 +11,8 @@ import axios from "axios";
 
 
 const Home = () => {
+  const api = import.meta.env.VITE_API_URL;
+
   useEffect(() => {
   AOS.init({ duration: 1000, once: false });
 }, []);
@@ -32,7 +34,7 @@ const Home = () => {
   }
 ];
 useEffect(() => {
-   axios.get('http://localhost:3000/api/guest/init').then (res => localStorage.setItem('guestId', res.data.guestId))
+   axios.get(`${api}/api/guest/init`).then (res => localStorage.setItem('guestId', res.data.guestId))
   },[])
     return (
       <>

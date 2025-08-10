@@ -8,6 +8,10 @@ import Cart from './pages/cart';
 import About from './pages/about';
 import Branches from './pages/branches';
 import { CartProvider } from './context/CartContext';
+import Checkout from './pages/checkout';
+import PaymentSuccess from './pages/success';
+import PaymentFailed from './pages/failure';
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <CartProvider>
@@ -18,6 +22,9 @@ ReactDOM.createRoot(document.getElementById('root')).render(
       <Route path='branches' element= {<Branches />} />
       <Route path='cart' element= {<Cart />} />
       <Route path='about' element= {<About />} />
+      <Route path='checkout' element= {<Checkout />} />
+      <Route path='/payment/success' element = {<PaymentSuccess />} />
+      <Route path='/payment/faliure' element = {<PaymentFailed />} />
 
     </Routes>
     </BrowserRouter>

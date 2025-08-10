@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import React from 'react'
 import { ArrowUp } from "lucide-react";
-import "../App.css";
 import { Instagram } from 'lucide-react';
 import { Facebook } from 'lucide-react';
 export default function Footer() {

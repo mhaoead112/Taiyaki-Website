@@ -7,6 +7,8 @@ import MenuItemModal from "../components/MenuItemModal";
 import Footer from './../components/Footer';
 import axios from "axios";
 const Menu = () => {
+  const api = import.meta.env.VITE_API_URL;
+
 const [menu, setMenu] = useState([]);
 const [userId , setUserId] = useState();
   useEffect(() => {
@@ -14,12 +16,12 @@ const [userId , setUserId] = useState();
   },[])
 const addToCart = async (menuItemId, extras, quantity) => {
   const bodyObject = {items:  {menuItemId , extras, quantity}};
- await axios.post(`http://localhost:3000/api/cart/${userId}`, bodyObject);
+ await axios.post(`${api}/api/cart/${userId}`, bodyObject);
      window.location.reload(false);
 
   };
   useEffect(() => {
-  axios.get('http://localhost:3000/api/menu')
+  axios.get(`${api}/api/menu`)
     .then(res => {
 
       setMenu(res.data);

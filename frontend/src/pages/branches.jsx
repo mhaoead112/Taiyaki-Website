@@ -7,9 +7,11 @@ import axios from 'axios';
 
 
 export default function Branches() {
+  const api = import.meta.env.VITE_API_URL;
+
     const [branches,setBranches] = useState([]);
     useEffect(() => {
-  axios.get('http://localhost:3000/api/branches')
+  axios.get(`${api}/api/branches`)
     .then(res => {
       setBranches(res.data.map((b, i) => ({
   ...b,

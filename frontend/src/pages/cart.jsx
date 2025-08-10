@@ -6,6 +6,8 @@ import React from 'react'
 import Navbar from '../components/NavBar';
 import axios from 'axios';
 const Cart = () => {
+  const api = import.meta.env.VITE_API_URL;
+
   const navigate = useNavigate();
   const [cart , setCart] = useState({ items: [] });
     const [cartData , setCartData] = useState();
@@ -18,16 +20,16 @@ const Cart = () => {
   },[])
    useEffect(() => {
     
-      axios.get(`http://localhost:3000/api/cart/${userId}`).then(res => setCart(res.data));
+      axios.get(`${api}/api/cart/${userId}`).then(res => setCart(res.data));
     }, [userId , cartData] );
     // useEffect((item)=> {
-    //   axios.post('http://localhost:3000/cart/update-quantity')
+    //   axios.post('${api}/cart/update-quantity')
     // },[cart])
   // setProducts(cart);
   // Update quantity for item
   const updateQuantity = async (menuItemId, newQuantity) => {
   try {
-    const res = await axios.patch('http://localhost:3000/api/cart/update-quantity', {userId, menuItemId, quantity: newQuantity  })
+    const res = await axios.patch(`${api}/api/cart/update-quantity`, {userId, menuItemId, quantity: newQuantity  })
     console.log(res.data);
     await setCartData(res.data); // Updates local state
   } catch (err) {
@@ -130,7 +132,7 @@ useEffect(()=> {
 
         {/* Payment Button */}
         <button
-          onClick={() => navigate('/payment')}
+          onClick={() => navigate('/checkout')}
           className="w-full bg-white text-black font-semibold py-3 rounded-xl hover:bg-gray-200 transition shadow-xl"
         >
           Go to Payment

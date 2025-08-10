@@ -7,12 +7,13 @@ import axios from 'axios';
 
 export default function Navbar() {
   const [totalItems, setTotalItems] = useState();
+const api = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     const fetchCartSummary = async () => {
       try {
         const userId = localStorage.getItem('guestId'); // function to get guestId from cookies or localStorage
-        const { data } = await axios.get(`http://localhost:3000/api/cart/summary/${userId}`);
+        const { data } = await axios.get(`${api}/api/cart/summary/${userId}`);
         setTotalItems(data.totalItems);
       } catch (err) {
         console.error('Failed to fetch cart summary:', err);
