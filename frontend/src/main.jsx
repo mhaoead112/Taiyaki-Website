@@ -7,7 +7,7 @@ import Home from './pages/home.jsx';
 import Cart from './pages/cart.jsx';
 import About from './pages/about.jsx';
 import Branches from './pages/branches.jsx';
-import { CartProvider } from './context/CartContext.jsx';
+import { CartProvider } from './context/cartContext.jsx';
 import Checkout from './pages/checkout.jsx';
 import PaymentSuccess from './pages/success.jsx';
 import PaymentFailed from './pages/failure.jsx';
