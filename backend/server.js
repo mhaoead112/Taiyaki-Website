@@ -33,7 +33,7 @@ require('dotenv').config();
 // menuItem.find().then((data)=> {
 //     console.log(data);
 // })
-mongoose.connect('mongodb://localhost:27017/Taiyaki-Website', {
+mongoose.connect(process.env.DATABASE_URL, {
   useNewUrlParser: true,  
   useUnifiedTopology: true
 }).then(() => {
