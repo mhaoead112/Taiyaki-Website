@@ -45,9 +45,6 @@ const app = express();
 app.use(express.json());
 const PORT = process.env.PORT || 3000;
 
-app.use(cors({
-     origin: 'https://taiyaki-website-cle4.vercel.app' || '*'
-   }));
 app.listen(PORT, ()=> {
     console.log(`Server running on ${PORT}`)    
 })
