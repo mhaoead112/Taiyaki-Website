@@ -46,7 +46,9 @@ app.use(express.json());
 const PORT = process.env.PORT || 3000;
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://taiyaki-website-cle4.vercel.app"
+  "https://taiyaki-website-cle4.vercel.app",
+  "https://taiyaki-website-cle4-git-master-mhaoead112s-projects.vercel.app",
+  "https://taiyaki-website-cle4-7htycf7z9-mhaoead112s-projects.vercel.app"
 ];
 
 app.use(cors({
