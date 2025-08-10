@@ -105,7 +105,7 @@ const api = import.meta.env.VITE_API_URL;
       }).then((data)=> {
         localStorage.setItem('orderId' , data.data.order._id )      });
       
-      alert("Order placed successfully!");
+      window.location.href = 'https://taiyaki-website-cle4.vercel.app/payment/success'    //   dispatch(clearCart());
     //   dispatch(clearCart());
     } catch (error) {
       alert("Order failed.");
@@ -139,6 +139,7 @@ const api = import.meta.env.VITE_API_URL;
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <input name="address" onChange={handleChange} placeholder="Address" className="input col-span-2 required:border-red-500" />
               <select name="branch" onChange={handleChange} className="input">
+                <option value="">--Select a branch--</option>
                 <option value="Mall of Arabia">Mall of Arabia</option>
                 <option value="Mall of Egypt">Mall of Egypt</option>
               </select>
