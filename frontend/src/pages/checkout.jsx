@@ -105,8 +105,10 @@ const api = import.meta.env.VITE_API_URL;
       }).then((data)=> {
         localStorage.setItem('orderId' , data.data.order._id )      });
       
+if(form.payment ==="cash") {
       window.location.href = 'https://taiyaki-website-cle4.vercel.app/payment/success'    //   dispatch(clearCart());
-    //   dispatch(clearCart());
+
+      }    //   dispatch(clearCart());
     } catch (error) {
       alert("Order failed.");
       console.error(error);
