@@ -73,3 +73,13 @@ export default {
   post: apiPost,
   request: apiRequest,
 };
+
+/**
+ * Build a clean API URL by normalizing slashes
+ * Ensures no double slashes and that path starts with a single '/'
+ */
+export const buildApiUrl = (base, path) => {
+  const cleanBase = (base || '').replace(/\/$/, '');
+  const cleanPath = (`${path || ''}`).replace(/^\/+/, '');
+  return `${cleanBase}/${cleanPath}`;
+};

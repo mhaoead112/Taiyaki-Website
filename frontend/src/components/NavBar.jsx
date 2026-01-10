@@ -3,21 +3,38 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../App.css'
 import { ShoppingCart } from 'lucide-react';
+import { useToast } from '../context/toastContext';
 import axios from 'axios';
+import { buildApiUrl } from '../utils/apiClient';
 
 export default function Navbar() {
   const [totalItems, setTotalItems] = useState();
 const api = import.meta.env.VITE_API_URL;
+  const { showToast } = useToast();
 
   useEffect(() => {
     const fetchCartSummary = async () => {
       try {
-        const userId = localStorage.getItem('guestId'); // function to get guestId from cookies or localStorage
-        console.log(userId)
-        const { data } = await axios.get(`${api}/api/cart/summary/${userId}`);
+        let userId = localStorage.getItem('guestId');
+
+        // If guestId is missing, initialize it via backend
+        if (!userId && api) {
+          try {
+            const initRes = await axios.get(buildApiUrl(api, '/api/guest/init'));
+            userId = initRes.data?.guestId;
+            if (userId) localStorage.setItem('guestId', userId);
+          } catch {
+            // swallow init errors; summary will remain undefined
+          }
+        }
+
+        if (!api || !userId) return;
+
+        const { data } = await axios.get(buildApiUrl(api, `/api/cart/summary/${userId}`));
         setTotalItems(data.totalItems);
       } catch (err) {
         console.error('Failed to fetch cart summary:', err);
+        showToast('Could not load cart summary', 'error');
       }
     };
 

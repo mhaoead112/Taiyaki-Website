@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { buildApiUrl } from "../utils/apiClient";
 import React from 'react'
 import { useSelector, useDispatch } from "react-redux";
 import Navbar from "../components/NavBar";
@@ -7,16 +8,19 @@ import Navbar from "../components/NavBar";
  import '../App.css';
 import PaymentMethodSelect from "../components/PayementMethodSelect";
 import { useNavigate } from "react-router";
+import { useToast } from "../context/toastContext";
 
 const Checkout = () => {
 const api = import.meta.env.VITE_API_URL;
       let navigate = useNavigate();
+  const { showToast } = useToast();
 
     const [paymentMethod, setPaymentMethod] = useState("");
   const [error, setError] = useState("");
   const [errorPay, setErrorPay] = useState("");
 
   const [total ,setTotal]= useState(0);
+  const [fees, setFees] = useState({ vatPercent: 14, deliveryFee: 20 });
   
   const [cartItems , setCartItems] = useState({ items: [] });
   const [userId , setUserId] = useState(localStorage.getItem('guestId'));
@@ -27,12 +31,22 @@ const api = import.meta.env.VITE_API_URL;
   setUserId(localStorage.getItem('guestId'))
   },[])
    useEffect(() => {
-    
-      axios.get(`${api}/api/cart/${userId}`).then(res => setCartItems(res.data));
-    }, [userId] );
+      if (!api || !userId) return;
+      axios.get(buildApiUrl(api, `/api/cart/fees`)).then(res => setFees({
+        vatPercent: Number(res.data?.vatPercent ?? 14),
+        deliveryFee: Number(res.data?.deliveryFee ?? 20),
+      })).catch(() => {});
+      axios.get(buildApiUrl(api, `/api/cart/${userId}`)).then(res => setCartItems(res.data));
+    }, [api, userId] );
     useEffect(()=> {
-              setTotal(cartItems.items.reduce((sum, item) => sum + item.menuItemId.price * item.quantity, 0))
-    },[cartItems])
+      const subtotal = (cartItems.items || []).reduce((sum, item) => {
+        const extrasTotal = (item.extras || []).reduce((s, e) => s + (e.price || 0), 0);
+        return sum + ((item.menuItemId?.price || 0) + extrasTotal) * (item.quantity || 0);
+      }, 0);
+      const vatAmount = subtotal * (fees.vatPercent / 100);
+      const totalGross = subtotal + vatAmount + fees.deliveryFee;
+      setTotal(totalGross);
+    },[cartItems, fees])
  const [form, setForm] = useState({
     phone: '',
     phone2: '',
@@ -88,14 +102,8 @@ const api = import.meta.env.VITE_API_URL;
 
     setError("");
     setErrorPay("");
-    if(form.payment ==="credit_card") {
-        const response = await axios.post(`${api}/api/paymob/checkout` , {
-            amount: (total*100),
-        }).then((res)=> {
-            window.location.href = res.data.redirectUrl
-        })  
-    }
-      const response = await axios.post(`${api}/api/order`, {
+    // Always create the order first so we have a stable reference
+      const response = await axios.post(buildApiUrl(api, `/api/order`), {
         name: form.name,
         phone: form.phone,
         address: joinedArray,
@@ -104,13 +112,24 @@ const api = import.meta.env.VITE_API_URL;
         totalPrice: total,
       }).then((data)=> {
         localStorage.setItem('orderId' , data.data.order._id )      });
-      
-if(form.payment ==="cash") {
-      window.location.href = 'https://taiyaki-website-cle4.vercel.app/payment/success'    //   dispatch(clearCart());
-
-      }    //   dispatch(clearCart());
+    
+    if(form.payment ==="credit_card") {
+        // Redirect to payment after saving orderId
+        await axios.post(buildApiUrl(api, `/api/paymob/checkout`) , {
+            amount: Math.round(total*100),
+        }).then((res)=> {
+            showToast('Redirecting to payment...', 'info', 3000);
+            window.location.href = res.data.redirectUrl
+        })  
+        return;
+    }
+    
+    if(form.payment ==="cash") {
+      showToast('Order placed successfully', 'success');
+      navigate('/payment/success');
+    }
     } catch (error) {
-      alert("Order failed.");
+      showToast('Order failed. Please try again.', 'error');
       console.error(error);
     }
   };

@@ -1,5 +1,6 @@
 // pages/payment/success.jsx
 import axios from 'axios';
+import { buildApiUrl } from '../utils/apiClient';
 import { useEffect, useState } from 'react';
 import React from 'react'
 import OrderSummary from '../components/OrderSummary';
@@ -13,14 +14,24 @@ export default function PaymentSuccess() {
   useEffect(() => {
     // Fetch order details if needed (e.g., from session or query params)
     const orderId = localStorage.getItem('orderId');
-    axios.get(`${api}/api/order/${orderId}`).then((res)=> setOrder(res.data))
+    if (!api || !orderId || orderId === 'null') {
+      return;
+    }
+    axios.get(buildApiUrl(api, `/api/order/${orderId}`)).then((res)=> setOrder(res.data))
   }, []);
 
   return (
     <>
     <div className="min-h-screen bg-black">
           <Navbar />
-{order ? <OrderSummary order={order} /> : <p>Loading...</p>}
+{order ? (
+  <OrderSummary order={order} />
+) : (
+  <div className="text-white p-6">
+    <p>Loading order details...</p>
+    <p className="text-gray-400 text-sm mt-2">If this takes too long, please return to the menu or check your orders.</p>
+  </div>
+)}
     </div>
     </>
   );

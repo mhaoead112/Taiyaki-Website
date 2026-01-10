@@ -1,41 +1,83 @@
-import React, { Component } from "react";
+import React from "react";
 import Navbar from "../components/NavBar";
 import App from './../App';
 import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
-import { useEffect } from 'react';
+import { ArrowRight, AlertCircle, RefreshCw } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import Footer from './../components/Footer';
 import axios from "axios";
+import { apiGet, buildApiUrl } from "../utils/apiClient";
+import { useToast } from "../context/toastContext";
 
 
 const Home = () => {
   const api = import.meta.env.VITE_API_URL;
-  console.log(api);
+  const [menu, setMenu] = useState([]);
+  const [featuredItems, setFeaturedItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isRetrying, setIsRetrying] = useState(false);
+  const { showToast } = useToast();
+
   useEffect(() => {
-  AOS.init({ duration: 1000, once: false });
-}, []);
-  const featuredItems = [
-  {
-    title: 'UNICORN Frappuccino',
-    img: 'https://i.ibb.co/VWy46c43/484469889-18350343745195615-8444838219776569930-n.jpg',
-  },
-  {
-    title: 'SOBIA TAPIOCA',
-    img: 'https://i.ibb.co/VWy46c43/484469889-18350343745195615-8444838219776569930-n.jpg',
-  },
-  {
-    title: 'MATCHA BLENDED',
-    img: 'https://i.ibb.co/VWy46c43/484469889-18350343745195615-8444838219776569930-n.jpg',
-  }, {
-  title: 'MATCHA BLENDED',
-    img: 'https://i.ibb.co/VWy46c43/484469889-18350343745195615-8444838219776569930-n.jpg',
-  }
-];
-useEffect(() => {
-   axios.get(`${api}/api/guest/init`).then (res => localStorage.setItem('guestId', res.data.guestId))
-  },[])
+    AOS.init({ duration: 1000, once: false });
+  }, []);
+
+  useEffect(() => {
+    if (api) {
+      axios.get(buildApiUrl(api, '/api/guest/init'))
+        .then (res => localStorage.setItem('guestId', res.data.guestId))
+        .catch(() => {/* ignore guest init errors here */});
+    }
+  },[api])
+
+  const fetchFeatured = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      if (!api) {
+        setError('Missing VITE_API_URL. Please set the API base URL in your environment.');
+        return;
+      }
+      const res = await apiGet(buildApiUrl(api, '/api/menu'));
+      const items = Array.isArray(res.data) ? res.data : [];
+      setMenu(items);
+
+      // Prefer items explicitly marked featured via category
+      let featured = items.filter(i => (i.category || '').toLowerCase().includes('featured'));
+      // Fallback: pick first 4 with images
+      if (featured.length === 0) {
+        featured = items.filter(i => !!i.imageUrl).slice(0, 4);
+      }
+      setFeaturedItems(featured);
+    } catch (err) {
+      console.error('Error fetching featured items:', err);
+      if (err.code === 'ECONNABORTED' || (err.message || '').includes('timeout')) {
+        setError('The server is waking up (Render cold start). Please try again.');
+        showToast('Server waking up, please retry', 'info');
+      } else if ((err.message || '').includes('Network Error')) {
+        setError('Network error. Please check your connection and retry.');
+        showToast('Network error. Check your connection.', 'error');
+      } else {
+        setError('Failed to load featured products. Please try again later.');
+        showToast('Failed to load featured products', 'error');
+      }
+    } finally {
+      setLoading(false);
+      setIsRetrying(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFeatured();
+  }, []);
+
+  const handleRetry = () => {
+    setIsRetrying(true);
+    fetchFeatured();
+  };
     return (
       <>
       <Navbar />
@@ -74,22 +116,48 @@ useEffect(() => {
         FEATURED PRODUCTS
       </h2>
 
-      {/* Product Cards */}
-      <div className="flex flex-wrap justify-center gap-8">
-        {featuredItems.map((item, index) => (
-          <div
-            key={index}
-            className="rounded-xl overflow-hidden shadow-xl border-t-4 border-red-600 max-w-xs transition hover:scale-105 duration-300" data-aos="zoom-in" data-aos-delay={`${(index+1) * 300}`}
-
+      {/* Product Cards with states */}
+      {loading ? (
+        <div className="flex flex-wrap justify-center gap-8">
+          {[1,2,3,4].map(i => (
+            <div key={i} className="rounded-xl overflow-hidden shadow-xl border-t-4 border-gray-700 max-w-xs animate-pulse">
+              <div className="w-full h-[400px] bg-gray-800" />
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <div className="max-w-md mx-auto text-center">
+          <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+          <p className="text-gray-300 mb-6">{error}</p>
+          <button
+            onClick={handleRetry}
+            disabled={isRetrying}
+            className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg transition inline-flex items-center gap-2 disabled:opacity-50"
           >
-            <img
-              src={item.img}
-              alt={item.title}
-              className="w-full object-cover h-[400px]"
-            />
-          </div>
-        ))}
-      </div>
+            <RefreshCw className={`w-5 h-5 ${isRetrying ? 'animate-spin' : ''}`} />
+            {isRetrying ? 'Retrying...' : 'Try Again'}
+          </button>
+        </div>
+      ) : featuredItems.length === 0 ? (
+        <div className="text-gray-300">No featured products available right now.</div>
+      ) : (
+        <div className="flex flex-wrap justify-center gap-8">
+          {featuredItems.map((item, index) => (
+            <div
+              key={item._id || index}
+              className="rounded-xl overflow-hidden shadow-xl border-t-4 border-red-600 max-w-xs transition hover:scale-105 duration-300"
+              data-aos="zoom-in" data-aos-delay={`${(index+1) * 300}`}
+            >
+              <img
+                src={item.imageUrl}
+                alt={item.title}
+                loading="lazy"
+                className="w-full object-cover h-[400px]"
+              />
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* View Menu Button */}
       <Link to="/menu">

@@ -6,10 +6,12 @@ import Navbar from "../components/NavBar";
 import MenuItemModal from "../components/MenuItemModal";
 import Footer from './../components/Footer';
 import axios from "axios";
-import { apiGet } from "../utils/apiClient";
+import { apiGet, buildApiUrl } from "../utils/apiClient";
+import { useToast } from "../context/toastContext";
 
 const Menu = () => {
   const api = import.meta.env.VITE_API_URL;
+  const { showToast } = useToast();
 
 const [menu, setMenu] = useState([]);
 const [userId , setUserId] = useState();
@@ -23,15 +25,24 @@ const [isRetrying, setIsRetrying] = useState(false);
 
 const addToCart = async (menuItemId, extras, quantity) => {
   const bodyObject = {items:  {menuItemId , extras, quantity}};
- await axios.post(`${api}/api/cart/${userId}`, bodyObject);
-     window.location.reload(false);
+ try {
+   await axios.post(buildApiUrl(api, `/api/cart/${userId}`), bodyObject);
+   showToast('Added to cart', 'success');
+   window.location.reload(false);
+ } catch (e) {
+   showToast('Failed to add to cart', 'error');
+ }
   };
 
   const fetchMenu = async () => {
     try {
       setLoading(true);
       setError(null);
-      const res = await apiGet(`${api}/api/menu`);
+      if (!api) {
+        setError('Missing VITE_API_URL. Please set the API base URL in your environment.');
+        return;
+      }
+      const res = await apiGet(buildApiUrl(api, '/api/menu'));
       
       if (res.data && res.data.length > 0) {
         setMenu(res.data);
@@ -186,6 +197,7 @@ useEffect(() => {
                 <img
                   src={item.imageUrl}
                   alt={item.title}
+                  loading="lazy"
                   className="h-24 mx-auto mb-4 object-contain"
                 />
                 <h3 className="text-xl font-bold mb-2">{item.title}</h3>

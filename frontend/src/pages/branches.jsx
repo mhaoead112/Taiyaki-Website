@@ -3,12 +3,13 @@ import { ArrowRight, AlertCircle, RefreshCw } from 'lucide-react';
 import Navbar from './../components/NavBar';
 import Footer from '../components/Footer';
 import { useEffect } from 'react';
-import axios from 'axios';
-import { apiGet } from '../utils/apiClient';
+import { apiGet, buildApiUrl } from '../utils/apiClient';
+import { useToast } from '../context/toastContext';
 
 
 export default function Branches() {
   const api = import.meta.env.VITE_API_URL;
+  const { showToast } = useToast();
 
   const [branches, setBranches] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,7 +20,11 @@ export default function Branches() {
     try {
       setLoading(true);
       setError(null);
-      const res = await apiGet(`${api}/api/branches`);
+      if (!api) {
+        setError('Missing VITE_API_URL. Please set the API base URL in your environment.');
+        return;
+      }
+      const res = await apiGet(buildApiUrl(api, '/api/branches'));
       
       if (res.data && res.data.length > 0) {
         setBranches(res.data.map((b, i) => ({
@@ -33,10 +38,13 @@ export default function Branches() {
       console.error("Error fetching branches:", err);
       if (err.code === 'ECONNABORTED' || err.message.includes('timeout')) {
         setError("The server is taking longer than expected to respond. This usually happens when the backend is waking up. Please try again.");
+        showToast('Server waking up, please retry', 'info');
       } else if (err.message.includes('Network Error')) {
         setError("Unable to connect to the server. Please check your internet connection and try again.");
+        showToast('Network error. Check your connection.', 'error');
       } else {
         setError("Failed to load branch information. Please try again later.");
+        showToast('Failed to load branches', 'error');
       }
     } finally {
       setLoading(false);
