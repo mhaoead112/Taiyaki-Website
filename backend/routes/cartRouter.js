@@ -75,6 +75,7 @@ if (!itemFound) {
     
     }
     await cartPost.save();
+    await cartPost.populate('items.menuItemId');
     res.json(cartPost);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -100,7 +101,8 @@ router.patch('/update-quantity', async (req, res) => {
   }
 
   await cart.save();
-  res.json(cart.populate('items.menuItemId'));
+  await cart.populate('items.menuItemId');
+  res.json(cart);
     } catch (error) {
             res.status(500).json({ error: error.message });
 
@@ -118,6 +120,32 @@ router.get('/summary/:userId', async (req, res) => {
     res.json({ totalItems });
   } catch (error) {
     res.status(500).json({ error: 'Error fetching cart summary' });
+  }
+});
+
+// GET cart fees (VAT percent and delivery fee)
+router.get('/fees', async (req, res) => {
+  try {
+    const vatPercent = parseFloat(process.env.VAT_PERCENT ?? '14');
+    const deliveryFee = parseFloat(process.env.DELIVERY_FEE ?? '20');
+    res.json({ vatPercent, deliveryFee });
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching fees' });
+  }
+});
+
+// DELETE clear cart by userId
+router.delete('/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const cart = await Cart.findOne({ userId });
+    if (!cart) return res.status(404).json({ error: 'Cart not found' });
+    cart.items = [];
+    await cart.save();
+    await cart.populate('items.menuItemId');
+    res.json(cart);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
 module.exports = router;
